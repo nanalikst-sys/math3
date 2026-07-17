@@ -13,33 +13,19 @@
 <body>
     <h1>MathPlay</h1>
     <div id="grid"></div>
-    <script>
-        const grid = document.getElementById('grid');
-        const emojis = ['🍓', '💎', '🍀', '⭐️', '🔮'];
-        let selectedTile = null;
-
-        function createBoard() {
-            for (let i = 0; i < 64; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'tile';
-                tile.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
-                tile.addEventListener('click', function() {
+    tile.addEventListener('click', function() {
+                    console.log('Клік по плитці!'); // Це має з'явитися в консолі
                     if (selectedTile) {
-                        // Міняємо місцями емодзі
                         let temp = this.innerHTML;
                         this.innerHTML = selectedTile.innerHTML;
                         selectedTile.innerHTML = temp;
+                        
                         selectedTile.classList.remove('selected');
                         selectedTile = null;
+                        console.log('Поміняли місцями');
                     } else {
                         selectedTile = this;
                         this.classList.add('selected');
+                        console.log('Вибрали плитку');
                     }
                 });
-                grid.appendChild(tile);
-            }
-        }
-        createBoard();
-    </script>
-</body>
-</html>
