@@ -1,263 +1,247 @@
-[17.07.2026 14:16] Natalie: <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>MathPlay Match-3</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: radial-gradient(circle, #2c003e, #0f001a);
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+ <title>MathPlay Match-3</title>
+ <style>
+ body {
+ margin: 0;
+ padding: 0;
+ background: radial-gradient(circle, #2c003e, #0f001a);
+ color: #fff;
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ min-height: 100vh;
+ overflow: hidden;
+ user-select: none;
+ -webkit-user-select: none;
+ }
 
-        #ui {
-            text-align: center;
-            margin-bottom: 15px;
-        }
+ #ui {
+ text-align: center;
+ margin-bottom: 15px;
+ }
 
-        h1 {
-            font-size: 24px;
-            margin: 5px 0;
-            text-shadow: 0 0 10px #ff007f;
-            color: #ff007f;
-        }
+ h1 {
+ font-size: 24px;
+ margin: 5px 0;
+ text-shadow: 0 0 10px #ff007f;
+ color: #ff007f;
+ }
 
-        #score-container {
-            font-size: 20px;
-            font-weight: bold;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 20px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);
-        }
+ #score-container {
+ font-size: 20px;
+ font-weight: bold;
+ background: rgba(255, 255, 255, 0.1);
+ padding: 8px 20px;
+ border-radius: 20px;
+ border: 1px solid rgba(255, 255, 255, 0.2);
+ box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);
+ }
 
-        #grid {
-            display: grid;
-            grid-template-columns: repeat(8, 40px);
-            grid-template-rows: repeat(8, 40px);
-            gap: 4px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 8px;
-            border-radius: 12px;
-            border: 2px solid #ff007f;
-            box-shadow: 0 0 30px rgba(255, 0, 127, 0.4);
-        }
+ #grid {
+ display: grid;
+ grid-template-columns: repeat(8, 40px);
+ grid-template-rows: repeat(8, 40px);
+ gap: 4px;
+ background: rgba(0, 0, 0, 0.6);
+ padding: 8px;
+ border-radius: 12px;
+ border: 2px solid #ff007f;
+ box-shadow: 0 0 30px rgba(255, 0, 127, 0.4);
+ }
 
-        @media (min-width: 450px) {
-            #grid {
-                grid-template-columns: repeat(8, 50px);
-                grid-template-rows: repeat(8, 50px);
-                gap: 6px;
-                padding: 12px;
-            }
-        }
+ @media (min-width: 450px) {
+ #grid {
+ grid-template-columns: repeat(8, 50px);
+ grid-template-rows: repeat(8, 50px);
+ gap: 6px;
+ padding: 12px;
+ }
+ }
 
-        .tile {
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: inset 0 0 8px rgba(255,255,255,0.3);
-        }
+ .tile {
+ width: 100%;
+ height: 100%;
+ border-radius: 8px;
+ cursor: pointer;
+ transition: transform 0.1s ease, box-shadow 0.1s ease;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 24px;
+ box-shadow: inset 0 0 8px rgba(255,255,255,0.3);
+ }
 
-        .tile:active {
-            transform: scale(0.9);
-        }
+ .tile:active {
+ transform: scale(0.9);
+ }
 
-        .selected {
-            outline: 3px solid #fff;
-            box-shadow: 0 0 15px #fff;
-            transform: scale(1.05);
-            z-index: 10;
-        }
+ .selected {
+ outline: 3px solid #fff;
+ box-shadow: 0 0 15px #fff;
+ transform: scale(1.05);
+ z-index: 10;
+ }
 
-        /* Стилі для різних елементів */
-        .tile-red { background: radial-gradient(circle, #ff5e62, #ff2525); }
-        .tile-blue { background: radial-gradient(circle, #3a7bd5, #3a6073); }
-        .tile-green { background: radial-gradient(circle, #11998e, #38ef7d); }
-        .tile-yellow { background: radial-gradient(circle, #ffe259, #ffa751); }
-        .tile-purple { background: radial-gradient(circle, #e0c3fc, #8ec5fc); }
-    </style>
+ .tile-red { background: radial-gradient(circle, #ff5e62, #ff2525); }
+ .tile-blue { background: radial-gradient(circle, #3a7bd5, #3a6073); }
+ .tile-green { background: radial-gradient(circle, #11998e, #38ef7d); }
+ .tile-yellow { background: radial-gradient(circle, #ffe259, #ffa751); }
+ .tile-purple { background: radial-gradient(circle, #e0c3fc, #8ec5fc); }
+ </style>
 </head>
 <body>
 
-    <div id="ui">
-        <h1>MathPlay</h1>
-        <div id="score-container">Рахунок: <span id="score">0</span></div>
-    </div>
+ <div id="ui">
+ <h1>MathPlay</h1>
+ <div id="score-container">Рахунок: <span id="score">0</span></div>
+ </div>
 
-    <div id="grid"></div>
+ <div id="grid"></div>
 
-    <script>
-        const width = 8;
-        const grid = document.getElementById('grid');
-        const scoreDisplay = document.getElementById('score');
-        let score = 0;
-        let tiles = [];
+ <script>
+ const width = 8;
+ const grid = document.getElementById('grid');
+ const scoreDisplay = document.getElementById('score');
+ let score = 0;
+ let tiles = [];
 
-        // Цукерки/Камінчики у вигляді емодзі для краси
-        const tileTypes = [
-            { name: 'red', emoji: '🍓', class: 'tile-red' },
-            { name: 'blue', emoji: '💎', class: 'tile-blue' },
-            { name: 'green', emoji: '🍀', class: 'tile-green' },
-            { name: 'yellow', emoji: '⭐', class: 'tile-yellow' },
-            { name: 'purple', emoji: '🔮', class: 'tile-purple' }
-        ];
+ const tileTypes = [
+ { name: 'red', emoji: ' ', class: 'tile-red' },
+ { name: 'blue', emoji: ' ', class: 'tile-blue' },
+ { name: 'green', emoji: ' ', class: 'tile-green' },
+ { name: 'yellow', emoji: ' ️', class: 'tile-yellow' },
+ { name: 'purple', emoji: ' ', class: 'tile-purple' }
+ ];
 
-        // Створення ігрового поля
-        function createBoard() {
-            for (let i = 0; i < width * width; i++) {
-                const tile = document.createElement('div');
-                tile.setAttribute('draggable', true);
-                tile.setAttribute('id', i);
-[17.07.2026 14:16] Natalie: // Випадковий тип елемента
-                let randomType = tileTypes[Math.floor(Math.random() * tileTypes.length)];
-                tile.classList.add('tile', randomType.class);
-                tile.innerHTML = randomType.emoji;
-                tile.dataset.type = randomType.name;
+ function createBoard() {
+ for (let i = 0; i < width * width; i++) {
+ const tile = document.createElement('div');
+ tile.setAttribute('draggable', true);
+ tile.setAttribute('id', i);
 
-                grid.appendChild(tile);
-                tiles.push(tile);
-            }
-        }
+ let randomType = tileTypes[Math.floor(Math.random() * tileTypes.length)];
+ tile.classList.add('tile', randomType.class);
+ tile.innerHTML = randomType.emoji;
+ tile.dataset.type = randomType.name;
 
-        createBoard();
+ grid.appendChild(tile);
+ tiles.push(tile);
+ }
+ }
 
-        // Керування вибором елементів
-        let tileIdBeingDragged;
-        let tileIdBeingReplaced;
-        let selectedTile = null;
+ createBoard();
 
-        tiles.forEach(tile => tile.addEventListener('click', function() {
-            if (!selectedTile) {
-                // Виділяємо першу плитку
-                selectedTile = this;
-                this.classList.add('selected');
-            } else {
-                // Вибираємо другу сусідню плитку
-                let tileId1 = parseInt(selectedTile.id);
-                let tileId2 = parseInt(this.id);
+ let tileIdBeingDragged;
+ let tileIdBeingReplaced;
+ let selectedTile = null;
 
-                // Перевірка, чи вони сусідні
-                const validMoves = [tileId1 - 1, tileId1 + 1, tileId1 - width, tileId1 + width];
-                const isAdjacent = validMoves.includes(tileId2);
+ tiles.forEach(tile => tile.addEventListener('click', function() {
+ if (!selectedTile) {
+ selectedTile = this;
+ this.classList.add('selected');
+ } else {
+ let tileId1 = parseInt(selectedTile.id);
+ let tileId2 = parseInt(this.id);
 
-                if (isAdjacent) {
-                    // Міняємо місцями
-                    swapTiles(selectedTile, this);
-                    
-                    // Перевіряємо на збіги
-                    let hasMatches = checkAndRefill();
-                    if (!hasMatches) {
-                        // Якщо збігів немає, повертаємо назад
-                        setTimeout(() => swapTiles(this, selectedTile), 300);
-                    }
-                }
+ const validMoves = [tileId1 - 1, tileId1 + 1, tileId1 - width, tileId1 + width];
+ const isAdjacent = validMoves.includes(tileId2);
 
-                selectedTile.classList.remove('selected');
-                selectedTile = null;
-            }
-        }));
+ if (isAdjacent) {
+ swapTiles(selectedTile, this);
+ 
+ let hasMatches = checkAndRefill();
+ if (!hasMatches) {
+ setTimeout(() => swapTiles(this, selectedTile), 300);
+ }
+ }
 
-        function swapTiles(tile1, tile2) {
-            const class1 = tile1.className;
-            const class2 = tile2.className;
-            const html1 = tile1.innerHTML;
-            const html2 = tile2.innerHTML;
-            const type1 = tile1.dataset.type;
-            const type2 = tile2.dataset.type;
+ selectedTile.classList.remove('selected');
+ selectedTile = null;
+ }
+ }));
 
-            tile1.className = class2;
-            tile2.className = class1;
-            tile1.innerHTML = html2;
-            tile2.innerHTML = html1;
-            tile1.dataset.type = type2;
-            tile2.dataset.type = type1;
-        }
+ function swapTiles(tile1, tile2) {
+ const class1 = tile1.className;
+ const class2 = tile2.className;
+ const html1 = tile1.innerHTML;
+ const html2 = tile2.innerHTML;
+ const type1 = tile1.dataset.type;
+ const type2 = tile2.dataset.type;
 
-        // Перевірка на три в ряд
-        function checkAndRefill() {
-            let matchFound = false;
+ tile1.className = class2;
+ tile2.className = class1;
+ tile1.innerHTML = html2;
+ tile2.innerHTML = html1;
+ tile1.dataset.type = type2;
+ tile2.dataset.type = type1;
+ }
 
-            // Перевірка рядків
-            for (let i = 0; i < 64; i++) {
-                let rowOfThree = [i, i + 1, i + 2];
-                let decidedType = tiles[i].dataset.type;
-                const isBlank = tiles[i].dataset.type === '';
+ function checkAndRefill() {
+ let matchFound = false;
 
-                if (i % width < width - 2) {
-                    if (rowOfThree.every(index => tiles[index].dataset.type === decidedType && !isBlank)) {
-                        score += 3;
-                        scoreDisplay.innerHTML = score;
-                        rowOfThree.forEach(index => {
-                            tiles[index].dataset.type = '';
-                            tiles[index].innerHTML = '';
-                            tiles[index].className = 'tile';
-                        });
-                        matchFound = true;
-                    }
-                }
-            }
+ for (let i = 0; i < 64; i++) {
+ let rowOfThree = [i, i + 1, i + 2];
+ let decidedType = tiles[i].dataset.type;
+ const isBlank = tiles[i].dataset.type === '';
 
-            // Перевірка колонок
-            for (let i = 0; i < 47; i++) {
-                let columnOfThree = [i, i + width, i + width * 2];
-                let decidedType = tiles[i].dataset.type;
-                const isBlank = tiles[i].dataset.type === '';
+ if (i % width < width - 2) {
+ if (rowOfThree.every(index => tiles[index].dataset.type === decidedType && !isBlank)) {
+ score += 3;
+ scoreDisplay.innerHTML = score;
+ rowOfThree.forEach(index => {
+ tiles[index].dataset.type = '';
+ tiles[index].innerHTML = '';
+ tiles[index].className = 'tile';
+ });
+ matchFound = true;
+ }
+ }
+ }
 
-                if (columnOfThree.every(index => tiles[index].dataset.type === decidedType && !isBlank)) {
-                    score += 3;
-                    scoreDisplay.innerHTML = score;
-                    columnOfThree.forEach(index => {
-                        tiles[index].dataset.type = '';
-                        tiles[index].innerHTML = '';
-                        tiles[index].className = 'tile';
-                    });
-                    matchFound = true;
-                }
-            }
+ for (let i = 0; i < 47; i++) {
+ let columnOfThree = [i, i + width, i + width * 2];
+ let decidedType = tiles[i].dataset.type;
+ const isBlank = tiles[i].dataset.type === '';
 
-            if (matchFound) {
-[17.07.2026 14:16] Natalie: setTimeout(refillTiles, 200);
-            }
-            return matchFound;
-        }
+ if (columnOfThree.every(index => tiles[index].dataset.type === decidedType && !isBlank)) {
+ score += 3;
+ scoreDisplay.innerHTML = score;
+ columnOfThree.forEach(index => {
+ tiles[index].dataset.type = '';
+ tiles[index].innerHTML = '';
+ tiles[index].className = 'tile';
+ });
+ matchFound = true;
+ }
+ }
 
-        // Заповнення порожніх місць новими
-        function refillTiles() {
-            for (let i = 0; i < 64; i++) {
-                if (tiles[i].dataset.type === '') {
-                    let randomType = tileTypes[Math.floor(Math.random() * tileTypes.length)];
-                    tiles[i].classList.add(randomType.class);
-                    tiles[i].innerHTML = randomType.emoji;
-                    tiles[i].dataset.type = randomType.name;
-                }
-            }
-            // Перевіряємо знову після засипання нових
-            setTimeout(checkAndRefill, 200);
-        }
+ if (matchFound) {
+ setTimeout(refillTiles, 200);
+ }
+ return matchFound;
+ }
 
-        // Початкова перевірка на старті, щоб поле не мало готових збігів
-        setInterval(() => {
-            checkAndRefill();
-        }, 1000);
-    </script>
+ function refillTiles() {
+ for (let i = 0; i < 64; i++) {
+ if (tiles[i].dataset.type === '') {
+ let randomType = tileTypes[Math.floor(Math.random() * tileTypes.length)];
+ tiles[i].classList.add(randomType.class);
+ tiles[i].innerHTML = randomType.emoji;
+ tiles[i].dataset.type = randomType.name;
+ }
+ }
+ setTimeout(checkAndRefill, 200);
+ }
+
+ setInterval(() => {
+ checkAndRefill();
+ }, 1000);
+ </script>
 </body>
 </html>
