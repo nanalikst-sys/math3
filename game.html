@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>MathPlay Match-3</title>
+    <style>
+        body { background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        #grid { display: grid; grid-template-columns: repeat(8, 40px); grid-template-rows: repeat(8, 40px); gap: 4px; background: #333; padding: 10px; border: 2px solid #ff007f; border-radius: 8px; }
+        .tile { width: 40px; height: 40px; background: #555; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border-radius: 4px; }
+        .tile.selected { outline: 3px solid #ff007f; }
+    </style>
+</head>
+<body>
+    <h1>MathPlay</h1>
+    <div id="score">Рахунок: 0</div>
+    <div id="grid"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('grid');
+            const emojis = ['🍓', '💎', '🍀', '⭐️', '🔮'];
+            
+            for (let i = 0; i < 64; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+                tile.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+                grid.appendChild(tile);
+            }
+        });
+    </script>
+</body>
+</html>
