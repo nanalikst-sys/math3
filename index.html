@@ -2,66 +2,70 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>MathPlay Match-3</title>
+    <title>MathPlay Cozy Match</title>
     <style>
-        body { background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
-        #grid { display: grid; grid-template-columns: repeat(8, 40px); grid-template-rows: repeat(8, 40px); gap: 2px; background: #333; padding: 5px; border-radius: 5px; }
-        .tile { width: 40px; height: 40px; background: #444; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border-radius: 3px; }
-        .selected { background: #ff007f; }
+        body { 
+            background: radial-gradient(circle, #2c3e50, #0f2027); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; color: #fdf6e3;
+        }
+        #grid { 
+            display: grid; grid-template-columns: repeat(8, 45px); grid-template-rows: repeat(8, 45px); 
+            gap: 5px; background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+        }
+        .tile { 
+            width: 45px; height: 45px; background: rgba(255,255,255,0.05); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-size: 28px; 
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .tile:hover { transform: scale(1.1); background: rgba(255,255,255,0.2); }
+        .selected { outline: 3px solid #ffcc00; transform: scale(1.1); }
     </style>
 </head>
 <body>
+    <h2 style="margin-bottom: 10px; font-weight: 300;">MathPlay Cozy</h2>
     <div id="grid"></div>
+
     <script>
         const gridElement = document.getElementById('grid');
-        const icons = ['🍓', '💎', '🍀', '⭐️', '🔮'];
+        const icons = ['🍓', '💎', '🍀', '⭐️', '🔮', '🌸'];
         let grid = [];
-        let selectedTile = null;
+        let selected = null;
 
         function createBoard() {
             gridElement.innerHTML = '';
             for (let i = 0; i < 64; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
-                tile.innerHTML = icons[Math.floor(Math.random() * icons.length)];
-                tile.onclick = () => handleTileClick(i);
+                tile.innerText = icons[Math.floor(Math.random() * icons.length)];
+                tile.onclick = () => selectTile(tile);
                 gridElement.appendChild(tile);
                 grid.push(tile);
             }
         }
 
-        function handleTileClick(index) {
-            if (selectedTile === null) {
-                selectedTile = index;
-                grid[index].classList.add('selected');
+        function selectTile(tile) {
+            if (selected) {
+                selected.classList.remove('selected');
+                if (Math.abs(grid.indexOf(selected) - grid.indexOf(tile)) === 1 || 
+                    Math.abs(grid.indexOf(selected) - grid.indexOf(tile)) === 8) {
+                    swap(selected, tile);
+                }
+                selected = null;
             } else {
-                let diff = Math.abs(selectedTile - index);
-                if (diff === 1 || diff === 8) {
-                    swapTiles(selectedTile, index);
-                    checkMatches();
-                }
-                grid[selectedTile].classList.remove('selected');
-                selectedTile = null;
+                selected = tile;
+                selected.classList.add('selected');
             }
         }
 
-        function swapTiles(i, j) {
-            let temp = grid[i].innerHTML;
-            grid[i].innerHTML = grid[j].innerHTML;
-            grid[j].innerHTML = temp;
+        function swap(t1, t2) {
+            let temp = t1.innerText;
+            t1.innerText = t2.innerText;
+            t2.innerText = temp;
+            // Після свапу зазвичай перевіряють збіги
         }
 
-        function checkMatches() {
-            // Простий алгоритм пошуку збігів по горизонталі
-            for (let i = 0; i < 64; i++) {
-                if (i % 8 < 6 && grid[i].innerHTML === grid[i+1].innerHTML && grid[i].innerHTML === grid[i+2].innerHTML) {
-                    grid[i].innerHTML = grid[i+1].innerHTML = grid[i+2].innerHTML = '💥';
-                    setTimeout(() => {
-                        grid[i].innerHTML = grid[i+1].innerHTML = grid[i+2].innerHTML = icons[Math.floor(Math.random() * icons.length)];
-                    }, 500);
-                }
-            }
-        }
         createBoard();
     </script>
 </body>
