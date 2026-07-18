@@ -2,19 +2,21 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MathPlay Cozy Match</title>
     <style>
-        body { background: #fdf6e3; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
-        #ui { margin-bottom: 10px; font-size: 20px; color: #5d4037; font-weight: bold; text-align: center; }
-        #grid { display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); gap: 4px; background: #d7ccc8; padding: 10px; border-radius: 15px; }
-        .tile { width: 50px; height: 50px; background: #efebe9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: grab; transition: 0.3s; }
-        #musicBtn { margin-top: 15px; padding: 8px 16px; cursor: pointer; border-radius: 10px; border: none; background: #5d4037; color: white; }
+        body { background: #fdf6e3; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; touch-action: manipulation; }
+        #ui { margin-bottom: 15px; font-size: 18px; color: #5d4037; font-weight: bold; text-align: center; }
+        #grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; background: #d7ccc8; padding: 5px; border-radius: 10px; width: 95vw; max-width: 400px; aspect-ratio: 1/1; }
+        .tile { background: #efebe9; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; }
+        .selected { background: #bcaaa4 !important; transform: scale(0.9); }
+        #musicBtn { margin-top: 20px; padding: 12px 24px; cursor: pointer; border-radius: 15px; border: none; background: #5d4037; color: white; font-size: 16px; }
     </style>
 </head>
 <body>
     <div id="ui">Рівень: 1 | Очки: 0<br>Збери: 10 🌸</div>
     <div id="grid"></div>
-    <button id="musicBtn">🎵 Увімкнути музику</button>
+    <button id="musicBtn">🎵 Музика</button>
     <audio id="bgMusic" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
 
     <script>
@@ -22,11 +24,11 @@
         const uiElement = document.getElementById('ui');
         const icons = ['🌸', '🍓', '💎', '⭐️', '🍀', '🍬'];
         let board = [], score = 0, level = 1, collectedFlowers = 0;
+        let firstSelected = null;
 
         document.getElementById('musicBtn').onclick = (e) => {
             const m = document.getElementById('bgMusic');
             m.paused ? m.play() : m.pause();
-            e.target.innerText = m.paused ? "🎵 Увімкнути музику" : "🔇 Вимкнути музику";
         };
 
         function createBoard() {
@@ -36,30 +38,33 @@
                 const tile = document.createElement('div');
                 tile.className = 'tile';
                 tile.innerText = icons[Math.floor(Math.random() * icons.length)];
-                tile.draggable = true;
-                tile.addEventListener('dragstart', (e) => e.dataTransfer.setData('text', i));
-                tile.addEventListener('dragover', (e) => e.preventDefault());
-                tile.addEventListener('drop', (e) => handleSwap(e.dataTransfer.getData('text'), i));
+                tile.onclick = () => handleTileClick(i);
                 gridElement.appendChild(tile);
                 board.push(tile);
             }
         }
 
-        function handleSwap(i, j) {
-            // Перевіряємо, чи сусідні клітинки
-            let diff = Math.abs(i - j);
-            if (diff !== 1 && diff !== 8) return;
+        function handleTileClick(i) {
+            if (firstSelected === null) {
+                firstSelected = i;
+                board[i].classList.add('selected');
+            } else {
+                let diff = Math.abs(firstSelected - i);
+                if (diff === 1 || diff === 8) {
+                    swap(firstSelected, i);
+                }
+                board[firstSelected].classList.remove('selected');
+                firstSelected = null;
+            }
+        }
 
-            // Тимчасово міняємо
+        function swap(i, j) {
             let temp = board[i].innerText;
             board[i].innerText = board[j].innerText;
             board[j].innerText = temp;
-
-            // Перевіряємо, чи утворився збіг
             if (isMatchAt(i) || isMatchAt(j)) {
                 checkMatches();
             } else {
-                // Якщо ні — повертаємо назад
                 let temp = board[i].innerText;
                 board[i].innerText = board[j].innerText;
                 board[j].innerText = temp;
@@ -69,22 +74,13 @@
         function isMatchAt(i) {
             const r = Math.floor(i / 8), c = i % 8;
             const val = board[i].innerText;
-            // Перевірка рядка та стовпця навколо i
             return (checkLine(r, c, 0, 1, val) >= 3 || checkLine(r, c, 1, 0, val) >= 3);
         }
 
         function checkLine(r, c, dr, dc, val) {
             let count = 1;
-            // В один бік
-            for(let i=1; i<3; i++) {
-                let nr = r + dr*i, nc = c + dc*i;
-                if(nr<8 && nc<8 && board[nr*8+nc].innerText === val) count++; else break;
-            }
-            // В інший бік
-            for(let i=1; i<3; i++) {
-                let nr = r - dr*i, nc = c - dc*i;
-                if(nr>=0 && nc>=0 && board[nr*8+nc].innerText === val) count++; else break;
-            }
+            for(let i=1; i<3; i++) { let nr = r + dr*i, nc = c + dc*i; if(nr<8 && nc<8 && board[nr*8+nc].innerText === val) count++; else break; }
+            for(let i=1; i<3; i++) { let nr = r - dr*i, nc = c - dc*i; if(nr>=0 && nc>=0 && board[nr*8+nc].innerText === val) count++; else break; }
             return count;
         }
 
