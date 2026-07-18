@@ -2,62 +2,45 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>MathPlay Cozy</title>
+    <title>MathPlay Cozy Match</title>
     <style>
-        /* Теплий, затишний дизайн */
-        body { 
-            background: linear-gradient(135deg, #fdf6e3, #e5d3b3); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            height: 100vh; margin: 0; font-family: 'Segoe UI', cursive; 
-        }
-        h1 { color: #5d4037; margin-bottom: 20px; font-weight: 300; }
-        #grid { 
-            display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); 
-            gap: 8px; background: #d7ccc8; padding: 15px; border-radius: 20px; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
-        }
-        .tile { 
-            width: 50px; height: 50px; background: #efebe9; border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center; font-size: 28px; 
-            cursor: pointer; transition: all 0.2s ease; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
-        }
-        .tile:hover { background: #fff; transform: translateY(-2px); }
-        .selected { background: #ffcc80 !important; transform: scale(1.1); box-shadow: 0 0 10px rgba(255,204,128,0.8); }
+        body { background: linear-gradient(135deg, #fdf6e3, #e5d3b3); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        #grid { display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); gap: 6px; background: #d7ccc8; padding: 12px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .tile { width: 50px; height: 50px; background: #efebe9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: grab; transition: 0.3s; }
     </style>
 </head>
 <body>
-    <h1>MathPlay Cozy</h1>
     <div id="grid"></div>
     <script>
         const gridElement = document.getElementById('grid');
         const icons = ['🌸', '🍓', '💎', '⭐️', '🍀', '🍬'];
-        let board = [];
-        let selected = null;
+        let draggedTile = null;
 
         function createBoard() {
             for (let i = 0; i < 64; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
+                tile.draggable = true;
                 tile.innerText = icons[Math.floor(Math.random() * icons.length)];
-                tile.onclick = () => select(tile);
+                
+                tile.addEventListener('dragstart', () => draggedTile = tile);
+                tile.addEventListener('dragover', (e) => e.preventDefault());
+                tile.addEventListener('drop', () => {
+                    let temp = draggedTile.innerText;
+                    draggedTile.innerText = tile.innerText;
+                    tile.innerText = temp;
+                    checkMatches();
+                });
+                
                 gridElement.appendChild(tile);
-                board.push(tile);
             }
         }
 
-        function select(tile) {
-            if (selected) {
-                selected.classList.remove('selected');
-                // Міняємо місцями
-                let temp = selected.innerText;
-                selected.innerText = tile.innerText;
-                tile.innerText = temp;
-                selected = null;
-            } else {
-                selected = tile;
-                selected.classList.add('selected');
-            }
+        function checkMatches() {
+            // Логіка перевірки рядів залишиться, але тепер вона спрацьовує після drop
+            // Додамо сюди алгоритм видалення збігів 3+
         }
+
         createBoard();
     </script>
 </body>
