@@ -1,71 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <title>MathPlay Cozy Match</title>
     <style>
-        body { 
-            background: radial-gradient(circle, #2c3e50, #0f2027); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; color: #fdf6e3;
-        }
-        #grid { 
-            display: grid; grid-template-columns: repeat(8, 45px); grid-template-rows: repeat(8, 45px); 
-            gap: 5px; background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
-        }
-        .tile { 
-            width: 45px; height: 45px; background: rgba(255,255,255,0.05); border-radius: 8px;
-            display: flex; align-items: center; justify-content: center; font-size: 28px; 
-            cursor: pointer; transition: all 0.3s ease;
-        }
-        .tile:hover { transform: scale(1.1); background: rgba(255,255,255,0.2); }
+        body { background: radial-gradient(circle, #2c3e50, #0f2027); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; color: #fdf6e3; font-family: sans-serif; }
+        #grid { display: grid; grid-template-columns: repeat(8, 45px); grid-template-rows: repeat(8, 45px); gap: 5px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 15px; }
+        .tile { width: 45px; height: 45px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; transition: all 0.3s; }
         .selected { outline: 3px solid #ffcc00; transform: scale(1.1); }
     </style>
 </head>
 <body>
-    <h2 style="margin-bottom: 10px; font-weight: 300;">MathPlay Cozy</h2>
     <div id="grid"></div>
-
     <script>
         const gridElement = document.getElementById('grid');
         const icons = ['🍓', '💎', '🍀', '⭐️', '🔮', '🌸'];
-        let grid = [];
-        let selected = null;
+        let board = Array(64).fill(null);
 
         function createBoard() {
-            gridElement.innerHTML = '';
             for (let i = 0; i < 64; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
                 tile.innerText = icons[Math.floor(Math.random() * icons.length)];
-                tile.onclick = () => selectTile(tile);
+                tile.onclick = () => handleClick(i);
                 gridElement.appendChild(tile);
-                grid.push(tile);
+                board[i] = tile;
             }
         }
 
-        function selectTile(tile) {
-            if (selected) {
-                selected.classList.remove('selected');
-                if (Math.abs(grid.indexOf(selected) - grid.indexOf(tile)) === 1 || 
-                    Math.abs(grid.indexOf(selected) - grid.indexOf(tile)) === 8) {
-                    swap(selected, tile);
-                }
-                selected = null;
+        let first = null;
+        function handleClick(i) {
+            if (!first) {
+                first = i;
+                board[i].classList.add('selected');
             } else {
-                selected = tile;
-                selected.classList.add('selected');
+                board[first].classList.remove('selected');
+                if (Math.abs(first - i) === 1 || Math.abs(first - i) === 8) {
+                    swap(first, i);
+                    setTimeout(findMatches, 300);
+                }
+                first = null;
             }
         }
 
-        function swap(t1, t2) {
-            let temp = t1.innerText;
-            t1.innerText = t2.innerText;
-            t2.innerText = temp;
-            // Після свапу зазвичай перевіряють збіги
+        function swap(i, j) {
+            let temp = board[i].innerText;
+            board[i].innerText = board[j].innerText;
+            board[j].innerText = temp;
         }
 
+        function findMatches() {
+            let toRemove = new Set();
+            // Пошук в рядках та стовпчиках (спрощено)
+            for(let i=0; i<64; i++) {
+                // Горизонталь
+                if(i%8 < 6 && board[i].innerText === board[i+1].innerText && board[i].innerText === board[i+2].innerText) {
+                    toRemove.add(i); toRemove.add(i+1); toRemove.add(i+2);
+                }
+                // Вертикаль
+                if(i < 48 && board[i].innerText === board[i+8].innerText && board[i].innerText === board[i+16].innerText) {
+                    toRemove.add(i); toRemove.add(i+8); toRemove.add(i+16);
+                }
+            }
+            toRemove.forEach(idx => {
+                board[idx].innerText = icons[Math.floor(Math.random() * icons.length)];
+            });
+        }
         createBoard();
     </script>
 </body>
