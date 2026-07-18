@@ -4,20 +4,35 @@
     <meta charset="UTF-8">
     <title>MathPlay Cozy Match</title>
     <style>
-        body { background: linear-gradient(135deg, #fdf6e3, #e5d3b3); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
-        #grid { display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); gap: 6px; background: #d7ccc8; padding: 12px; border-radius: 15px; }
+        body { background: linear-gradient(135deg, #fdf6e3, #e5d3b3); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        #grid { display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); gap: 6px; background: #d7ccc8; padding: 12px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .tile { width: 50px; height: 50px; background: #efebe9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: grab; transition: 0.3s; }
+        #musicBtn { margin-top: 20px; padding: 10px 20px; cursor: pointer; border-radius: 10px; border: none; background: #5d4037; color: white; font-size: 16px; }
     </style>
 </head>
 <body>
     <div id="grid"></div>
+    <button id="musicBtn">🎵 Увімкнути музику</button>
+    <audio id="bgMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         const gridElement = document.getElementById('grid');
         const icons = ['🌸', '🍓', '💎', '⭐️', '🍀', '🍬'];
         let board = [];
 
+        // Функція для звуку
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
+        musicBtn.onclick = () => {
+            if (bgMusic.paused) { bgMusic.play(); musicBtn.innerText = "🔇 Вимкнути музику"; }
+            else { bgMusic.pause(); musicBtn.innerText = "🎵 Увімкнути музику"; }
+        };
+
         function createBoard() {
             gridElement.innerHTML = '';
+            board = [];
             for (let i = 0; i < 64; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
@@ -27,8 +42,7 @@
                 tile.addEventListener('dragover', (e) => e.preventDefault());
                 tile.addEventListener('drop', (e) => {
                     let from = e.dataTransfer.getData('text');
-                    let to = i;
-                    swap(from, to);
+                    swap(from, i);
                 });
                 gridElement.appendChild(tile);
                 board.push(tile);
@@ -43,31 +57,25 @@
         }
 
         function processBoard() {
-            let found = false;
             let toRemove = new Set();
-
-            // Пошук збігів
             for (let r = 0; r < 8; r++) {
                 for (let c = 0; c < 6; c++) {
                     let i = r * 8 + c;
-                    if (board[i].innerText === board[i+1].innerText && board[i].innerText === board[i+2].innerText) {
-                        toRemove.add(i); toRemove.add(i+1); toRemove.add(i+2); found = true;
+                    if (board[i].innerText && board[i].innerText === board[i+1].innerText && board[i].innerText === board[i+2].innerText) {
+                        toRemove.add(i); toRemove.add(i+1); toRemove.add(i+2);
                     }
                 }
             }
             for (let c = 0; c < 8; c++) {
                 for (let r = 0; r < 6; r++) {
                     let i = r * 8 + c;
-                    if (board[i].innerText === board[i+8].innerText && board[i].innerText === board[i+16].innerText) {
-                        toRemove.add(i); toRemove.add(i+8); toRemove.add(i+16); found = true;
+                    if (board[i].innerText && board[i].innerText === board[i+8].innerText && board[i].innerText === board[i+16].innerText) {
+                        toRemove.add(i); toRemove.add(i+8); toRemove.add(i+16);
                     }
                 }
             }
-
-            if (found) {
-                // "Звільняємо" клітинки
+            if (toRemove.size > 0) {
                 toRemove.forEach(i => board[i].innerText = '');
-                // Гравітація: пересуваємо фігури зверху вниз
                 setTimeout(applyGravity, 300);
             }
         }
@@ -86,10 +94,7 @@
                     }
                 }
             }
-            // Заповнюємо верхівку новими фігурами
-            board.forEach(tile => {
-                if (tile.innerText === '') tile.innerText = icons[Math.floor(Math.random() * icons.length)];
-            });
+            board.forEach(tile => { if (tile.innerText === '') tile.innerText = icons[Math.floor(Math.random() * icons.length)]; });
             setTimeout(processBoard, 300);
         }
 
