@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <title>MathPlay Cozy Match</title>
     <style>
-        body { background: #fdf6e3; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
-        #ui { margin-bottom: 10px; font-size: 20px; color: #5d4037; }
+        body { background: #fdf6e3; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        #ui { margin-bottom: 10px; font-size: 20px; color: #5d4037; font-weight: bold; }
         #grid { display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); gap: 4px; background: #d7ccc8; padding: 10px; border-radius: 15px; }
-        .tile { width: 50px; height: 50px; background: #efebe9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: grab; transition: 0.2s; }
-        .blocked { background: #a1887f !important; border: 2px solid #5d4037; }
+        .tile { width: 50px; height: 50px; background: #efebe9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.3s; }
+        #musicBtn { margin-top: 15px; padding: 8px 16px; cursor: pointer; border-radius: 10px; border: none; background: #5d4037; color: white; }
     </style>
 </head>
 <body>
     <div id="ui">Рівень: 1 | Очки: 0</div>
     <div id="grid"></div>
+    <button id="musicBtn">🎵 Увімкнути музику</button>
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
         const gridElement = document.getElementById('grid');
@@ -21,54 +25,107 @@
         let board = [];
         let score = 0;
 
+        // Логіка музики
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
+        musicBtn.onclick = () => {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => { musicBtn.innerText = "🔇 Вимкнути музику"; });
+            } else {
+                bgMusic.pause();
+                musicBtn.innerText = "🎵 Увімкнути музику";
+            }
+        };
+
         function createBoard() {
             gridElement.innerHTML = '';
             for (let i = 0; i < 64; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
-                // Кожна 10-та клітинка заблокована для цікавості
-                if (i % 15 === 0) tile.classList.add('blocked');
-                
                 tile.innerText = icons[Math.floor(Math.random() * icons.length)];
-                tile.draggable = true;
-                tile.addEventListener('dragstart', (e) => e.dataTransfer.setData('text', i));
-                tile.addEventListener('dragover', (e) => e.preventDefault());
-                tile.addEventListener('drop', (e) => swap(e.dataTransfer.getData('text'), i));
+                tile.onclick = () => selectTile(i);
                 gridElement.appendChild(tile);
                 board.push(tile);
             }
         }
 
+        let selected = null;
+        function selectTile(i) {
+            if (!selected) {
+                selected = i;
+                board[i].style.backgroundColor = '#d7ccc8';
+            } else {
+                let diff = Math.abs(selected - i);
+                if (diff === 1 || diff === 8) {
+                    swap(selected, i);
+                }
+                board[selected].style.backgroundColor = '#efebe9';
+                selected = null;
+            }
+        }
+
         function swap(i, j) {
-            // Не можна рухати заблоковані
-            if (board[i].classList.contains('blocked') || board[j].classList.contains('blocked')) return;
-            
             let temp = board[i].innerText;
             board[i].innerText = board[j].innerText;
             board[j].innerText = temp;
-            processBoard();
+            if (!checkMatches()) {
+                setTimeout(() => {
+                    let temp = board[i].innerText;
+                    board[i].innerText = board[j].innerText;
+                    board[j].innerText = temp;
+                }, 300);
+            }
         }
 
-        function processBoard() {
+        function checkMatches() {
             let toRemove = new Set();
-            // ... (тут логіка пошуку збігів, як раніше) ...
-            // Додано: бонус за 4 в ряд
-            if (toRemove.size >= 4) {
-                // Можна додати логіку появи "Супер-фігури"
-                score += 50;
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 6; c++) {
+                    let i = r * 8 + c;
+                    if (board[i].innerText && board[i].innerText === board[i+1].innerText && board[i].innerText === board[i+2].innerText) {
+                        toRemove.add(i); toRemove.add(i+1); toRemove.add(i+2);
+                    }
+                }
             }
-            
+            for (let c = 0; c < 8; c++) {
+                for (let r = 0; r < 6; r++) {
+                    let i = r * 8 + c;
+                    if (board[i].innerText && board[i].innerText === board[i+8].innerText && board[i].innerText === board[i+16].innerText) {
+                        toRemove.add(i); toRemove.add(i+8); toRemove.add(i+16);
+                    }
+                }
+            }
+
             if (toRemove.size > 0) {
-                toRemove.forEach(i => {
-                    if (!board[i].classList.contains('blocked')) board[i].innerText = '';
-                });
-                score += toRemove.size * 5;
+                toRemove.forEach(i => board[i].innerText = '');
+                score += toRemove.size * 10;
                 document.getElementById('ui').innerText = `Рівень: ${Math.floor(score/500)+1} | Очки: ${score}`;
-                setTimeout(applyGravity, 200);
+                setTimeout(dropTiles, 300);
+                return true;
             }
+            return false;
         }
-        
-        // ... (функція applyGravity залишається) ...
+
+        function dropTiles() {
+            for (let c = 0; c < 8; c++) {
+                for (let r = 7; r > 0; r--) {
+                    if (board[r * 8 + c].innerText === '') {
+                        for (let k = r - 1; k >= 0; k--) {
+                            if (board[k * 8 + c].innerText !== '') {
+                                board[r * 8 + c].innerText = board[k * 8 + c].innerText;
+                                board[k * 8 + c].innerText = '';
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            for (let i = 0; i < 8; i++) {
+                if (board[i].innerText === '') board[i].innerText = icons[Math.floor(Math.random() * icons.length)];
+            }
+            setTimeout(checkMatches, 300);
+        }
+
         createBoard();
     </script>
 </body>
