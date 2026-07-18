@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>MathPlay Cozy Match</title>
     <style>
-        body { background: linear-gradient(135deg, #fdf6e3, #e5d3b3); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
-        #grid { display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); gap: 6px; background: #d7ccc8; padding: 12px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        body { background: linear-gradient(135deg, #fdf6e3, #e5d3b3); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        #grid { display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); gap: 6px; background: #d7ccc8; padding: 12px; border-radius: 15px; }
         .tile { width: 50px; height: 50px; background: #efebe9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: grab; transition: 0.3s; }
     </style>
 </head>
@@ -23,7 +23,6 @@
                 tile.className = 'tile';
                 tile.draggable = true;
                 tile.innerText = icons[Math.floor(Math.random() * icons.length)];
-                
                 tile.addEventListener('dragstart', (e) => e.dataTransfer.setData('text', i));
                 tile.addEventListener('dragover', (e) => e.preventDefault());
                 tile.addEventListener('drop', (e) => {
@@ -31,7 +30,6 @@
                     let to = i;
                     swap(from, to);
                 });
-                
                 gridElement.appendChild(tile);
                 board.push(tile);
             }
@@ -41,34 +39,58 @@
             let temp = board[i].innerText;
             board[i].innerText = board[j].innerText;
             board[j].innerText = temp;
-            checkMatches();
+            processBoard();
         }
 
-        function checkMatches() {
+        function processBoard() {
+            let found = false;
             let toRemove = new Set();
-            // Перевірка горизонталей
+
+            // Пошук збігів
             for (let r = 0; r < 8; r++) {
                 for (let c = 0; c < 6; c++) {
-                    let idx = r * 8 + c;
-                    if (board[idx].innerText === board[idx+1].innerText && board[idx].innerText === board[idx+2].innerText) {
-                        toRemove.add(idx); toRemove.add(idx+1); toRemove.add(idx+2);
+                    let i = r * 8 + c;
+                    if (board[i].innerText === board[i+1].innerText && board[i].innerText === board[i+2].innerText) {
+                        toRemove.add(i); toRemove.add(i+1); toRemove.add(i+2); found = true;
                     }
                 }
             }
-            // Перевірка вертикалей
             for (let c = 0; c < 8; c++) {
                 for (let r = 0; r < 6; r++) {
-                    let idx = r * 8 + c;
-                    if (board[idx].innerText === board[idx+8].innerText && board[idx].innerText === board[idx+16].innerText) {
-                        toRemove.add(idx); toRemove.add(idx+8); toRemove.add(idx+16);
+                    let i = r * 8 + c;
+                    if (board[i].innerText === board[i+8].innerText && board[i].innerText === board[i+16].innerText) {
+                        toRemove.add(i); toRemove.add(i+8); toRemove.add(i+16); found = true;
                     }
                 }
             }
-            
-            toRemove.forEach(i => {
-                board[i].innerText = icons[Math.floor(Math.random() * icons.length)];
+
+            if (found) {
+                // "Звільняємо" клітинки
+                toRemove.forEach(i => board[i].innerText = '');
+                // Гравітація: пересуваємо фігури зверху вниз
+                setTimeout(applyGravity, 300);
+            }
+        }
+
+        function applyGravity() {
+            for (let c = 0; c < 8; c++) {
+                for (let r = 7; r > 0; r--) {
+                    if (board[r * 8 + c].innerText === '') {
+                        for (let k = r - 1; k >= 0; k--) {
+                            if (board[k * 8 + c].innerText !== '') {
+                                board[r * 8 + c].innerText = board[k * 8 + c].innerText;
+                                board[k * 8 + c].innerText = '';
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            // Заповнюємо верхівку новими фігурами
+            board.forEach(tile => {
+                if (tile.innerText === '') tile.innerText = icons[Math.floor(Math.random() * icons.length)];
             });
-            if(toRemove.size > 0) setTimeout(checkMatches, 300);
+            setTimeout(processBoard, 300);
         }
 
         createBoard();
