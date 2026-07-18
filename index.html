@@ -5,39 +5,31 @@
     <title>MathPlay Cozy Match</title>
     <style>
         body { background: linear-gradient(135deg, #fdf6e3, #e5d3b3); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        #ui { margin-bottom: 10px; font-size: 24px; color: #5d4037; font-weight: bold; }
         #grid { display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); gap: 6px; background: #d7ccc8; padding: 12px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .tile { width: 50px; height: 50px; background: #efebe9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: grab; transition: 0.3s; }
-        #musicBtn { margin-top: 20px; padding: 10px 20px; cursor: pointer; border-radius: 10px; border: none; background: #5d4037; color: white; font-size: 16px; }
+        #musicBtn { margin-top: 15px; padding: 8px 16px; cursor: pointer; border-radius: 10px; border: none; background: #5d4037; color: white; }
     </style>
 </head>
 <body>
+    <div id="ui">Рівень: 1 | Очки: 0</div>
     <div id="grid"></div>
     <button id="musicBtn">🎵 Увімкнути музику</button>
     <audio id="bgMusic" loop>
-        <!-- Тестове посилання на музику -->
         <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
 
     <script>
         const gridElement = document.getElementById('grid');
+        const uiElement = document.getElementById('ui');
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
         const icons = ['🌸', '🍓', '💎', '⭐️', '🍀', '🍬'];
         let board = [];
+        let score = 0;
+        let level = 1;
 
-        // Логіка музики з перевіркою помилок
-        musicBtn.onclick = () => {
-            if (bgMusic.paused) {
-                bgMusic.play().then(() => {
-                    musicBtn.innerText = "🔇 Вимкнути музику";
-                }).catch(e => {
-                    alert("Натисніть на будь-яку фігуру на полі, щоб дозволити звук!");
-                });
-            } else {
-                bgMusic.pause();
-                musicBtn.innerText = "🎵 Увімкнути музику";
-            }
-        };
+        musicBtn.onclick = () => { bgMusic.paused ? bgMusic.play() : bgMusic.pause(); };
 
         function createBoard() {
             gridElement.innerHTML = '';
@@ -49,13 +41,15 @@
                 tile.innerText = icons[Math.floor(Math.random() * icons.length)];
                 tile.addEventListener('dragstart', (e) => e.dataTransfer.setData('text', i));
                 tile.addEventListener('dragover', (e) => e.preventDefault());
-                tile.addEventListener('drop', (e) => {
-                    let from = e.dataTransfer.getData('text');
-                    swap(from, i);
-                });
+                tile.addEventListener('drop', (e) => swap(e.dataTransfer.getData('text'), i));
                 gridElement.appendChild(tile);
                 board.push(tile);
             }
+        }
+
+        function updateUI() {
+            level = Math.floor(score / 100) + 1;
+            uiElement.innerText = `Рівень: ${level} | Очки: ${score}`;
         }
 
         function swap(i, j) {
@@ -84,8 +78,10 @@
                 }
             }
             if (toRemove.size > 0) {
+                score += toRemove.size * 10;
+                updateUI();
                 toRemove.forEach(i => board[i].innerText = '');
-                setTimeout(applyGravity, 300);
+                setTimeout(applyGravity, 200);
             }
         }
 
@@ -104,7 +100,7 @@
                 }
             }
             board.forEach(tile => { if (tile.innerText === '') tile.innerText = icons[Math.floor(Math.random() * icons.length)]; });
-            setTimeout(processBoard, 300);
+            setTimeout(processBoard, 200);
         }
 
         createBoard();
