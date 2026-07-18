@@ -39,23 +39,53 @@
                 tile.draggable = true;
                 tile.addEventListener('dragstart', (e) => e.dataTransfer.setData('text', i));
                 tile.addEventListener('dragover', (e) => e.preventDefault());
-                tile.addEventListener('drop', (e) => swap(e.dataTransfer.getData('text'), i));
+                tile.addEventListener('drop', (e) => handleSwap(e.dataTransfer.getData('text'), i));
                 gridElement.appendChild(tile);
                 board.push(tile);
             }
         }
 
-        function swap(i, j) {
+        function handleSwap(i, j) {
+            // Перевіряємо, чи сусідні клітинки
+            let diff = Math.abs(i - j);
+            if (diff !== 1 && diff !== 8) return;
+
+            // Тимчасово міняємо
             let temp = board[i].innerText;
             board[i].innerText = board[j].innerText;
             board[j].innerText = temp;
-            if (!checkMatches()) {
-                setTimeout(() => {
-                    let temp = board[i].innerText;
-                    board[i].innerText = board[j].innerText;
-                    board[j].innerText = temp;
-                }, 300);
+
+            // Перевіряємо, чи утворився збіг
+            if (isMatchAt(i) || isMatchAt(j)) {
+                checkMatches();
+            } else {
+                // Якщо ні — повертаємо назад
+                let temp = board[i].innerText;
+                board[i].innerText = board[j].innerText;
+                board[j].innerText = temp;
             }
+        }
+
+        function isMatchAt(i) {
+            const r = Math.floor(i / 8), c = i % 8;
+            const val = board[i].innerText;
+            // Перевірка рядка та стовпця навколо i
+            return (checkLine(r, c, 0, 1, val) >= 3 || checkLine(r, c, 1, 0, val) >= 3);
+        }
+
+        function checkLine(r, c, dr, dc, val) {
+            let count = 1;
+            // В один бік
+            for(let i=1; i<3; i++) {
+                let nr = r + dr*i, nc = c + dc*i;
+                if(nr<8 && nc<8 && board[nr*8+nc].innerText === val) count++; else break;
+            }
+            // В інший бік
+            for(let i=1; i<3; i++) {
+                let nr = r - dr*i, nc = c - dc*i;
+                if(nr>=0 && nc>=0 && board[nr*8+nc].innerText === val) count++; else break;
+            }
+            return count;
         }
 
         function checkMatches() {
@@ -79,12 +109,10 @@
                     board[i].innerText = '';
                 });
                 score += toRemove.size * 10;
-                if (collectedFlowers >= 10) { level++; collectedFlowers = 0; alert("Рівень пройдено! Переходимо до " + level); }
+                if (collectedFlowers >= 10) { level++; collectedFlowers = 0; alert("Рівень пройдено!"); }
                 uiElement.innerHTML = `Рівень: ${level} | Очки: ${score}<br>Збери: ${10 - collectedFlowers} 🌸`;
                 setTimeout(dropTiles, 300);
-                return true;
             }
-            return false;
         }
 
         function dropTiles() {
