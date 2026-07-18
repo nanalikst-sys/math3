@@ -14,20 +14,29 @@
     <div id="grid"></div>
     <button id="musicBtn">🎵 Увімкнути музику</button>
     <audio id="bgMusic" loop>
-        <source src="[https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3](https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3)" type="audio/mpeg">
+        <!-- Тестове посилання на музику -->
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
 
     <script>
         const gridElement = document.getElementById('grid');
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
         const icons = ['🌸', '🍓', '💎', '⭐️', '🍀', '🍬'];
         let board = [];
 
-        // Функція для звуку
-        const musicBtn = document.getElementById('musicBtn');
-        const bgMusic = document.getElementById('bgMusic');
+        // Логіка музики з перевіркою помилок
         musicBtn.onclick = () => {
-            if (bgMusic.paused) { bgMusic.play(); musicBtn.innerText = "🔇 Вимкнути музику"; }
-            else { bgMusic.pause(); musicBtn.innerText = "🎵 Увімкнути музику"; }
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => {
+                    musicBtn.innerText = "🔇 Вимкнути музику";
+                }).catch(e => {
+                    alert("Натисніть на будь-яку фігуру на полі, щоб дозволити звук!");
+                });
+            } else {
+                bgMusic.pause();
+                musicBtn.innerText = "🎵 Увімкнути музику";
+            }
         };
 
         function createBoard() {
