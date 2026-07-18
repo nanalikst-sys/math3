@@ -1,72 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Match-3 Cozy Game</title>
+    <title>MathPlay Cozy</title>
     <style>
-        body { background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; font-family: sans-serif; }
-        #grid { display: grid; grid-template-columns: repeat(8, 45px); gap: 5px; background: #34495e; padding: 10px; border-radius: 10px; }
-        .tile { width: 45px; height: 45px; background: #ecf0f1; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 25px; cursor: pointer; transition: 0.3s; }
-        .selected { outline: 4px solid #f1c40f; }
+        /* Теплий, затишний дизайн */
+        body { 
+            background: linear-gradient(135deg, #fdf6e3, #e5d3b3); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            height: 100vh; margin: 0; font-family: 'Segoe UI', cursive; 
+        }
+        h1 { color: #5d4037; margin-bottom: 20px; font-weight: 300; }
+        #grid { 
+            display: grid; grid-template-columns: repeat(8, 50px); grid-template-rows: repeat(8, 50px); 
+            gap: 8px; background: #d7ccc8; padding: 15px; border-radius: 20px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+        }
+        .tile { 
+            width: 50px; height: 50px; background: #efebe9; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; font-size: 28px; 
+            cursor: pointer; transition: all 0.2s ease; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
+        }
+        .tile:hover { background: #fff; transform: translateY(-2px); }
+        .selected { background: #ffcc80 !important; transform: scale(1.1); box-shadow: 0 0 10px rgba(255,204,128,0.8); }
     </style>
 </head>
 <body>
+    <h1>MathPlay Cozy</h1>
     <div id="grid"></div>
     <script>
         const gridElement = document.getElementById('grid');
-        const icons = ['🍎', '🍋', '🍇', '🍒', '🍓', '🍑'];
-        let board = Array(64).fill(null);
+        const icons = ['🌸', '🍓', '💎', '⭐️', '🍀', '🍬'];
+        let board = [];
         let selected = null;
 
-        function initBoard() {
+        function createBoard() {
             for (let i = 0; i < 64; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
                 tile.innerText = icons[Math.floor(Math.random() * icons.length)];
-                tile.onclick = () => handleTileClick(tile, i);
+                tile.onclick = () => select(tile);
                 gridElement.appendChild(tile);
-                board[i] = tile;
+                board.push(tile);
             }
         }
 
-        function handleTileClick(tile, i) {
+        function select(tile) {
             if (selected) {
                 selected.classList.remove('selected');
-                swap(selected, tile);
+                // Міняємо місцями
+                let temp = selected.innerText;
+                selected.innerText = tile.innerText;
+                tile.innerText = temp;
                 selected = null;
-                setTimeout(processMatches, 300);
             } else {
                 selected = tile;
                 selected.classList.add('selected');
             }
         }
-
-        function swap(t1, t2) {
-            let temp = t1.innerText;
-            t1.innerText = t2.innerText;
-            t2.innerText = temp;
-        }
-
-        function processMatches() {
-            let found = false;
-            // Проста перевірка горизонталей та вертикалей
-            for (let i = 0; i < 64; i++) {
-                // Горизонталь
-                if (i % 8 < 6 && board[i].innerText === board[i+1].innerText && board[i].innerText === board[i+2].innerText) {
-                    board[i].innerText = board[i+1].innerText = board[i+2].innerText = '✨';
-                    found = true;
-                }
-            }
-            if (found) {
-                setTimeout(() => {
-                    for(let i=0; i<64; i++) {
-                        if(board[i].innerText === '✨') board[i].innerText = icons[Math.floor(Math.random() * icons.length)];
-                    }
-                }, 300);
-            }
-        }
-
-        initBoard();
+        createBoard();
     </script>
 </body>
 </html>
