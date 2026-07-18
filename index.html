@@ -14,31 +14,61 @@
     <script>
         const gridElement = document.getElementById('grid');
         const icons = ['🌸', '🍓', '💎', '⭐️', '🍀', '🍬'];
-        let draggedTile = null;
+        let board = [];
 
         function createBoard() {
+            gridElement.innerHTML = '';
             for (let i = 0; i < 64; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
                 tile.draggable = true;
                 tile.innerText = icons[Math.floor(Math.random() * icons.length)];
                 
-                tile.addEventListener('dragstart', () => draggedTile = tile);
+                tile.addEventListener('dragstart', (e) => e.dataTransfer.setData('text', i));
                 tile.addEventListener('dragover', (e) => e.preventDefault());
-                tile.addEventListener('drop', () => {
-                    let temp = draggedTile.innerText;
-                    draggedTile.innerText = tile.innerText;
-                    tile.innerText = temp;
-                    checkMatches();
+                tile.addEventListener('drop', (e) => {
+                    let from = e.dataTransfer.getData('text');
+                    let to = i;
+                    swap(from, to);
                 });
                 
                 gridElement.appendChild(tile);
+                board.push(tile);
             }
         }
 
+        function swap(i, j) {
+            let temp = board[i].innerText;
+            board[i].innerText = board[j].innerText;
+            board[j].innerText = temp;
+            checkMatches();
+        }
+
         function checkMatches() {
-            // Логіка перевірки рядів залишиться, але тепер вона спрацьовує після drop
-            // Додамо сюди алгоритм видалення збігів 3+
+            let toRemove = new Set();
+            // Перевірка горизонталей
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 6; c++) {
+                    let idx = r * 8 + c;
+                    if (board[idx].innerText === board[idx+1].innerText && board[idx].innerText === board[idx+2].innerText) {
+                        toRemove.add(idx); toRemove.add(idx+1); toRemove.add(idx+2);
+                    }
+                }
+            }
+            // Перевірка вертикалей
+            for (let c = 0; c < 8; c++) {
+                for (let r = 0; r < 6; r++) {
+                    let idx = r * 8 + c;
+                    if (board[idx].innerText === board[idx+8].innerText && board[idx].innerText === board[idx+16].innerText) {
+                        toRemove.add(idx); toRemove.add(idx+8); toRemove.add(idx+16);
+                    }
+                }
+            }
+            
+            toRemove.forEach(i => {
+                board[i].innerText = icons[Math.floor(Math.random() * icons.length)];
+            });
+            if(toRemove.size > 0) setTimeout(checkMatches, 300);
         }
 
         createBoard();
